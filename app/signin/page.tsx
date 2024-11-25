@@ -1,5 +1,6 @@
-"use client";
-import { useState, useMemo, useEffect } from "react";
+'use client';
+
+import { useState, useMemo } from "react";
 import { IoEye, IoEyeOff } from "react-icons/io5";
 import {
   Card,
@@ -10,50 +11,65 @@ import {
   Divider,
   Input,
 } from "@nextui-org/react";
+import { useRouter } from 'next/navigation';
 
-export default function SignupPage() {
+export default function SigninPage() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [lastLoginTime] = useState<number | null>(null);
-
+  const router = useRouter();
+  
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
+  
     if (lastLoginTime && Date.now() - lastLoginTime < 60000) {
       setError("Aguarde 1 minuto para tentar novamente.");
       return;
     }
-
+  
     setLoading(true);
     setError("");
-
+  
     try {
       const response = await fetch("/api/auth/signin", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, senha }),
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         setError(errorData.error || "Erro no servidor");
         return;
       }
-
-      window.location.href = "/dashboard";
+  
+      const data = await response.json();
+      const tipo_usuario = data.tipo_usuario;
+  
+      switch (tipo_usuario) {
+        case "administrador":
+          router.push('/admin');
+          break;
+        case "associado":
+          router.push('/dashboard');
+          break;
+        case "pendente":
+          router.push('/checkout');
+          break;
+        default:
+          setError("Tipo de usuário inválido");
+          break;
+      }      
     } catch (error) {
-      console.error("Erro de conexão:", error);
-      setError("Erro ao conectar-se ao servidor");
+      console.error("Erro ao conectar-se ao servidor", error);
     } finally {
       setLoading(false);
     }
   };
-
+  
   const toggleVisibility = () => setIsVisible((prev) => !prev);
 
   const isInvalidEmail = useMemo(() => {

@@ -2,19 +2,19 @@ import bcrypt from "bcrypt";
 import createConnection from "@/config/connection";
 
 export async function POST(req: Request) {
-  const { nome, email, senha, tipo, numero_contato } = await req.json();
+  const { nome, email, senha, tipo_usuario, numero_contato } = await req.json();
 
-  if (!nome || !email || !senha || !tipo || !numero_contato) {
+  if (!nome || !email || !senha || !tipo_usuario || !numero_contato) {
     return new Response(
       JSON.stringify({ error: "Todos os campos são obrigatórios" }),
       { status: 400, headers: { "Content-Type": "application/json" } },
     );
   }
 
-  if (tipo !== "cliente") {
+  if (!["administrador", "associado"].includes(tipo_usuario)) {
     return new Response(
-      JSON.stringify({ error: "Somente pacientes podem se cadastrar" }),
-      { status: 403, headers: { "Content-Type": "application/json" } },
+      JSON.stringify({ error: "Tipo de usuário inválido" }),
+      { status: 400, headers: { "Content-Type": "application/json" } },
     );
   }
 
@@ -26,7 +26,7 @@ export async function POST(req: Request) {
 
     // Verifica se o email já está cadastrado
     const [rows]: any = await connection.execute(
-      `SELECT id FROM Usuario WHERE email = ?`,
+      `SELECT id FROM usuarios WHERE email = ?`,
       [email],
     );
 
@@ -37,10 +37,10 @@ export async function POST(req: Request) {
       );
     }
 
-    // Cria o usuário com o novo campo
+    // Cria o usuário
     await connection.execute(
-      `INSERT INTO Usuario (nome, email, senha, tipo, numero_contato) VALUES (?, ?, ?, ?, ?)`,
-      [nome, email, hashedPassword, tipo, numero_contato],
+      `INSERT INTO usuarios (nome, email, senha_hash, tipo_usuario, numero_contato) VALUES (?, ?, ?, ?, ?)`,
+      [nome, email, hashedPassword, tipo_usuario, numero_contato],
     );
 
     return new Response(
@@ -53,9 +53,5 @@ export async function POST(req: Request) {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
-  } finally {
-    if (connection) {
-      await connection.end();
-    }
   }
 }

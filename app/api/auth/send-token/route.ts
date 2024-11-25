@@ -12,15 +12,14 @@ export async function POST(req: Request) {
     });
   }
 
-  const token = Math.floor(100000 + Math.random() * 900000).toString(); // Gera um token de 6 dígitos
+  const token = Math.floor(100000 + Math.random() * 900000).toString();
   const hashedToken = await bcrypt.hash(token, 10);
-  const expiryTime = Date.now() + 15 * 60 * 1000; // Expira em 15 minutos
+  const expiryTime = Date.now() + 15 * 60 * 1000;
 
   let connection;
   try {
     connection = await createConnection();
 
-    // Atualiza o resetToken e resetTokenExpiry no banco de dados
     await connection.execute(
       `UPDATE Usuario SET resetToken = ?, resetTokenExpiry = ? WHERE email = ?`,
       [hashedToken, expiryTime, email],

@@ -16,7 +16,7 @@
    - **Descrição:** Armazena os registros de entradas e saídas financeiras.
    - **Campos:**
      - `id` (INT): Identificador único do registro financeiro. Chave primária.
-     - `tipo` (ENUM): Define se a movimentação é uma `entrada` ou `saida`.
+     - `tipo_usuario` (ENUM): Define se a movimentação é uma `entrada` ou `saida`.
      - `valor` (DECIMAL): Valor da movimentação.
      - `data_movimentacao` (DATE): Data em que a movimentação ocorreu.
      - `descricao` (TEXT): Descrição da movimentação.
@@ -94,7 +94,7 @@
   -- Tabela entradas_saidas_financeiras
   CREATE TABLE entradas_saidas_financeiras (
       id INT AUTO_INCREMENT PRIMARY KEY,
-      tipo ENUM('entrada', 'saida') NOT NULL,
+      tipo_usuario ENUM('entrada', 'saida') NOT NULL,
       valor DECIMAL(10, 2) NOT NULL,
       data_movimentacao DATE NOT NULL,
       descricao TEXT,

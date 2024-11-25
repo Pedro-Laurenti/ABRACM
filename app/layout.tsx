@@ -1,6 +1,5 @@
 import "@/styles/globals.css";
 import { Metadata, Viewport } from "next";
-import { Link } from "@nextui-org/link";
 import clsx from "clsx";
 
 import { Providers } from "./providers";
@@ -33,8 +32,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html suppressHydrationWarning lang="en">
-      <head />
+    <html lang="pt-BR">
       <body
         className={clsx(
           "min-h-screen bg-background font-sans antialiased",
@@ -42,15 +40,24 @@ export default function RootLayout({
         )}
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
-          <div className="relative flex flex-col h-screen">
+          <header>
             <Navbar />
-            <main className="container mx-auto max-w-7xl pt-16 px-6 flex-grow">
-              {children}
-            </main>
-            <footer className="w-full flex items-center justify-center py-3">
-							teste
-            </footer>
-          </div>
+          </header>
+          <main className="container mx-auto max-w-7xl pt-16 px-6 flex-grow min-h-screen">
+            {children}
+          </main>
+          <footer className="w-full flex items-center justify-around py-3">
+            <img
+              alt="Breathing app icon"
+              src="/logo.svg"
+              className="w-50 h-50"
+            />
+            <div className="flex flex-col h-auto">
+              <div>Av. Juscelino Kubitscheck, 500</div>
+              <div>Bairro Jundiaí, Anápolis / GO</div>
+              <div>Cep: 75110-390</div>
+            </div>
+          </footer>
         </Providers>
       </body>
     </html>

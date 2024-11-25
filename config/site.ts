@@ -1,23 +1,19 @@
 export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
-  name: "NextUI",
-  description: "Make beautiful websites regardless of your design experience.",
+  name: "ABRACM",
+  description: "Associação Brasileira de Clínicas Multidisciplinares de Reabilitação Neurológica.",
   navItems: [
     {
       label: "Início",
       href: "/",
     },
     {
-        label: "Questionário",
-        href: "/questionario",
+        label: "Quem somos",
+        href: "/quem-somos",
     },
     {
-        label: "Agendar terapia",
-        href: "/checkout",
-    },
-    {
-        label: "Entrar",
+        label: "Sou associado",
         href: "/signin",
     },
   ],

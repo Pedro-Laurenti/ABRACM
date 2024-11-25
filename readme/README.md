@@ -60,7 +60,7 @@
 - **Gestão de Candidaturas:**
   - Associados interessados podem se candidatar diretamente pelo portal. Cada vaga exibe a lista de candidatos com informações de contato e status da aplicação.
 - **Filtros e Pesquisa Avançada:**
-  - Possibilidade de filtrar vagas por clínica, localidade, nível de experiência e tipo de contratação.
+  - Possibilidade de filtrar vagas por clínica, localidade, nível de experiência e tipo_usuario de contratação.
 - **Notificação de Novas Vagas:**
   - Sistema de notificações para alertar profissionais e associados sobre novas oportunidades publicadas, de acordo com suas preferências de áreas e localização.
 

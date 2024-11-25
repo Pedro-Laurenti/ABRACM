@@ -8,7 +8,7 @@ type Props = {
   price: string;
 };
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!);
+const stripePromise = loadStripe(process.env.STRIPE_PUBLIC_KEY!);
 
 const StripeSubs = ({ priceId, price }: Props) => {
   const handleSubmit = async () => {

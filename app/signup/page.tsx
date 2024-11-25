@@ -13,13 +13,13 @@ import {
 } from "@nextui-org/react";
 import { IoEye, IoEyeOff } from "react-icons/io5";
 
-export default function SigninPage() {
+export default function SignupPage() {
   const [formData, setFormData] = useState({
     nome: "",
     email: "",
     senha: "",
     confirmSenha: "",
-    numeroContato: "",
+    numero_contato: "",
   });
   const [isVisible, setIsVisible] = useState(false);
   const [hasTriedSubmit, setHasTriedSubmit] = useState(false);
@@ -27,7 +27,7 @@ export default function SigninPage() {
   const [error, setError] = useState("");
   const router = useRouter();
 
-  const { nome, email, senha, confirmSenha, numeroContato } = formData;
+  const { nome, email, senha, confirmSenha, numero_contato } = formData;
 
   const handleChange = (e: { target: { name: any; value: any; }; }) => {
     const { name, value } = e.target;
@@ -44,22 +44,22 @@ export default function SigninPage() {
 
   const handlePhoneChange = (e: { target: { value: any; }; }) => {
     const formattedNumber = formatPhoneNumber(e.target.value);
-    setFormData({ ...formData, numeroContato: formattedNumber });
+    setFormData({ ...formData, numero_contato: formattedNumber });
   };
 
   const handleSignup = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     setHasTriedSubmit(true);
     setError("");
-
+  
     if (senha !== confirmSenha || isInvalidPhoneNumber || isInvalidEmail) {
       setError("Por favor, corrija os campos inválidos.");
       return;
     }
-
+  
     setLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 500));
-
+  
     try {
       const response = await fetch("/api/auth/signup", {
         method: "POST",
@@ -68,40 +68,25 @@ export default function SigninPage() {
           nome,
           email,
           senha,
-          tipo: "cliente",
-          numero_contato: numeroContato,
+          tipo_usuario: "associado", // Set the tipo_usuario value to "associado"
+          numero_contato,
         }),
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         setError(errorData.error || "Erro no servidor");
         return;
       }
-
-      const loginResponse = await fetch("/api/auth/signin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, senha }),
-      });
-
-      if (!loginResponse.ok) {
-        const errorData = await loginResponse.json();
-        setError(errorData.error || "Erro ao realizar login");
-        return;
-      }
-
-      const { token } = await loginResponse.json();
-      document.cookie = `authToken=${token}; path=/; max-age=3600`;
-
+  
       router.push("/checkout");
     } catch (error) {
       console.error("Erro ao conectar-se ao servidor", error);
-      setError("Erro ao conectar-se ao servidor");
     } finally {
       setLoading(false);
     }
   };
+  
 
   const isInvalidPhoneNumber = useMemo(() => {
     const invalidNumbers = [
@@ -110,9 +95,9 @@ export default function SigninPage() {
       "(22) 22222-2222",
     ];
     return (
-      numeroContato.length !== 15 || invalidNumbers.includes(numeroContato)
+      numero_contato.length !== 15 || invalidNumbers.includes(numero_contato)
     );
-  }, [numeroContato]);
+  }, [numero_contato]);
 
   const isInvalidEmail = useMemo(() => {
     return email && !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(email);
@@ -154,8 +139,8 @@ export default function SigninPage() {
               name="numeroContato"
               label="Número de Contato"
               variant="bordered"
-              value={numeroContato}
-              onChange={handlePhoneChange} // Chama a formatação no onChange
+              value={numero_contato}
+              onChange={handlePhoneChange}
               isInvalid={hasTriedSubmit && isInvalidPhoneNumber}
               errorMessage={
                 hasTriedSubmit && isInvalidPhoneNumber
