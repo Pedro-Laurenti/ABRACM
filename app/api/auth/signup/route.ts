@@ -1,5 +1,11 @@
 import bcrypt from "bcrypt";
 import createConnection from "@/config/connection";
+import jwt from "jsonwebtoken";
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2024-10-28.acacia",
+});
 
 export async function POST(req: Request) {
   const { nome, email, senha, tipo_usuario, numero_contato } = await req.json();
@@ -11,7 +17,7 @@ export async function POST(req: Request) {
     );
   }
 
-  if (!["administrador", "associado"].includes(tipo_usuario)) {
+  if (!["administrador", "associado", "pendente"].includes(tipo_usuario)) {
     return new Response(
       JSON.stringify({ error: "Tipo de usuário inválido" }),
       { status: 400, headers: { "Content-Type": "application/json" } },
@@ -37,21 +43,67 @@ export async function POST(req: Request) {
       );
     }
 
-    // Cria o usuário
-    await connection.execute(
+    // Cria o usuário no banco de dados
+    const [result]: any = await connection.execute(
       `INSERT INTO usuarios (nome, email, senha_hash, tipo_usuario, numero_contato) VALUES (?, ?, ?, ?, ?)`,
       [nome, email, hashedPassword, tipo_usuario, numero_contato],
     );
 
+    const usuarioId = result.insertId;
+
+    // Cria o customer na Stripe
+    const stripeCustomer = await stripe.customers.create({
+      name: nome,
+      email,
+      phone: numero_contato,
+      metadata: { usuarioId: String(usuarioId) },
+    });
+
+    // Atualiza o usuário no banco com o ID do customer da Stripe
+    await connection.execute(
+      `UPDATE usuarios SET stripe_customer_id = ? WHERE id = ?`,
+      [stripeCustomer.id, usuarioId],
+    );
+
+    // Gera o token JWT
+    const secretKey = process.env.TOKEN_SECRET_KEY;
+    if (!secretKey) {
+      throw new Error("TOKEN_SECRET_KEY não está definido");
+    }
+
+    const token = jwt.sign({ id: usuarioId, tipo_usuario }, secretKey, {
+      expiresIn: "1h",
+    });
+
+    // Criando os cabeçalhos e configurando os cookies
+    const headers = new Headers({
+      "Content-Type": "application/json",
+    });
+
+    // Adicionando os cookies
+    headers.append("Set-Cookie", `authToken=${token}; HttpOnly; Secure; Path=/; Max-Age=3600`);
+    headers.append(
+      "Set-Cookie",
+      `stripe_customer_id=${stripeCustomer.id}; Secure; Path=/; Max-Age=3600`,
+    );
+    headers.append(
+      "Set-Cookie",
+      `internal_user_id=${usuarioId}; Secure; Path=/; Max-Age=3600`,
+    );
+
     return new Response(
-      JSON.stringify({ message: "Usuário criado com sucesso" }),
-      { status: 201, headers: { "Content-Type": "application/json" } },
+      JSON.stringify({ token, tipo_usuario, id: usuarioId }),
+      { status: 201, headers },
     );
   } catch (error) {
-    console.error("Erro na criação do usuário:", error);
-    return new Response(JSON.stringify({ error: "Erro no servidor" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    console.error("Erro na criação do usuário ou customer:", error);
+    return new Response(
+      JSON.stringify({ error: "Erro no servidor" }),
+      { status: 500, headers: { "Content-Type": "application/json" } },
+    );
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 }

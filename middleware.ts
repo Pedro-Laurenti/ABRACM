@@ -9,8 +9,8 @@ export async function middleware(req: NextRequest) {
   }
 
   try {
-    const secretKey = process.env.SECRET_KEY;
-    if (!secretKey) throw new Error("SECRET_KEY não definida no ambiente");
+    const secretKey = process.env.TOKEN_SECRET_KEY;
+    if (!secretKey) throw new Error("TOKEN_SECRET_KEY não definida no ambiente");
 
     // Decodifica e verifica o token usando o secret
     await jwtVerify(token, new TextEncoder().encode(secretKey));
@@ -22,5 +22,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard', '/teste']
+  matcher: ['/dashboard', '/checkout']
 };

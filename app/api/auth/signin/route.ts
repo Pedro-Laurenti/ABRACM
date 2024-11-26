@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     connection = await createConnection();
 
     const [rows]: any = await connection.execute(
-      `SELECT id, senha_hash, tipo_usuario FROM usuarios WHERE email = ?`,
+      `SELECT id, senha_hash, tipo_usuario, stripe_customer_id FROM usuarios WHERE email = ?`,
       [email],
     );
 
@@ -38,26 +38,34 @@ export async function POST(req: Request) {
       );
     }
 
-    const secretKey = process.env.SECRET_KEY;
+    const secretKey = process.env.TOKEN_SECRET_KEY;
     if (!secretKey) {
-      throw new Error("SECRET_KEY is not defined");
+      throw new Error("TOKEN_SECRET_KEY is not defined");
     }
 
     const token = jwt.sign({ id: user.id, tipo_usuario: user.tipo_usuario }, secretKey, {
       expiresIn: "1h",
     });
 
-    return new Response(
-      JSON.stringify({ token, tipo_usuario: user.tipo_usuario }),
-      {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Set-Cookie": `authToken=${token}; HttpOnly; Secure; Path=/; Max-Age=3600`,
-        },
-      },
+    // Criando os cabeçalhos e adicionando os cookies
+    const headers = new Headers({
+      "Content-Type": "application/json",
+    });
+
+    headers.append("Set-Cookie", `authToken=${token}; HttpOnly; Secure; Path=/; Max-Age=3600`);
+    headers.append(
+      "Set-Cookie",
+      `stripe_customer_id=${user.stripe_customer_id}; Secure; Path=/; Max-Age=3600`,
     );
-    
+    headers.append(
+      "Set-Cookie",
+      `internal_user_id=${user.id}; Secure; Path=/; Max-Age=3600`,
+    );
+
+    return new Response(
+      JSON.stringify({ token, tipo_usuario: user.tipo_usuario, internal_user_id: user.id }),
+      { status: 200, headers },
+    );
   } catch (error) {
     console.error("Erro ao realizar login:", error);
     return new Response(

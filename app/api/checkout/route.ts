@@ -1,38 +1,62 @@
-import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
+import createConnection from "@/config/connection";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2024-10-28.acacia",
 });
 
-export async function POST(req: NextRequest) {
-  try {
-    const { priceId } = await req.json();
+export async function POST(req: Request) {
+  const { customerId, priceId, usuarioId } = await req.json();
 
-    if (!priceId || typeof priceId !== "string") {
-      return NextResponse.json({ error: "Invalid Price ID" }, { status: 400 });
-    }
+  if (!customerId || !priceId || !usuarioId) {
+    return new Response(
+      JSON.stringify({ error: "Campos obrigatórios estão ausentes" }),
+      { status: 400, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
+  let connection;
+  try {
+    connection = await createConnection();
+
+    // Criando a sessão no Stripe
+    const successUrl = `${process.env.NEXT_BASE_URL}/success?session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrl = `${process.env.NEXT_BASE_URL}/cancel`;
 
     const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      payment_method_types: ["card", `boleto`],
-      // payment_method_types: ['card', `boleto`, 'pix', 'acss_debit' ] ,
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      success_url: `${process.env.NEXT_BASE_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_BASE_URL}/cancel`,
+      payment_method_types: ["card"],
+      customer: customerId,
+      line_items: [{ price: priceId, quantity: 1 }],
+      mode: "subscription",
+      success_url: successUrl,
+      cancel_url: cancelUrl,
     });
 
-    return NextResponse.json({ sessionId: session.id }, { status: 200 });
-  } catch (error) {
-    console.error("Error creating checkout session:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 },
+    // Inserindo assinatura no banco com valor temporário para stripe_subscription_id
+    const [result]: any = await connection.execute(
+      `INSERT INTO assinaturas 
+        (usuario_id, stripe_subscription_id, plano, status, data_criacao) 
+      VALUES (?, ?, ?, ?, NOW())`,
+      [usuarioId, "pending", priceId, "incomplete"], // "pending" como valor temporário
     );
+
+    if (!result.insertId) {
+      throw new Error("Falha ao registrar assinatura no banco de dados");
+    }
+
+    return new Response(
+      JSON.stringify({ sessionId: session.id }),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  } catch (error: any) {
+    console.error("Erro ao criar sessão de checkout:", error);
+    return new Response(
+      JSON.stringify({ error: "Erro ao processar a solicitação" }),
+      { status: 500, headers: { "Content-Type": "application/json" } },
+    );
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
 }

@@ -31,7 +31,7 @@ export async function POST(req: Request) {
       port: 465,
       secure: true,
       auth: {
-        user: "contato@filipegabiatti.com",
+        user: "contato@abracm.com.br",
         pass: "!4bB568521aA$3",
       },
     });

@@ -16,7 +16,11 @@ export function Providers({ children, themeProps }: ProvidersProps) {
 
   return (
     <NextUIProvider navigate={router.push}>
-      <ThemeProvider {...themeProps}>{children}</ThemeProvider>
+      <ThemeProvider {...themeProps}>
+        <div className="min-h-screen flex flex-col justify-between">
+          {children}
+        </div>
+      </ThemeProvider>
     </NextUIProvider>
   );
 }

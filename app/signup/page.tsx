@@ -68,7 +68,7 @@ export default function SignupPage() {
           nome,
           email,
           senha,
-          tipo_usuario: "associado", // Set the tipo_usuario value to "associado"
+          tipo_usuario: "pendente",
           numero_contato,
         }),
       });

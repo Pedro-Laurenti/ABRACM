@@ -1,35 +1,78 @@
-"use client";
+import { useState } from "react";
 import { Button } from "@nextui-org/react";
-import { loadStripe } from "@stripe/stripe-js";
-import axios from "axios";
+import Cookies from "js-cookie";
+import { loadStripe } from "@stripe/stripe-js";  // Importação correta
 
-type Props = {
-  priceId: string;
-  price: string;
-};
+export default function StripePayment({ priceId, price }: { priceId: string; price: string }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-const stripePromise = loadStripe(process.env.STRIPE_PUBLIC_KEY!);
+  const handlePayment = async () => {
+    setLoading(true);
+    setError(null);
 
-const StripeSubs = ({ priceId, price }: Props) => {
-  const handleSubmit = async () => {
-    const response = await axios.post("/api/checkout", { priceId });
+    const customerId = Cookies.get("stripe_customer_id"); // Obtemos o ID do cliente do cookie
+    const usuarioId = Cookies.get("internal_user_id");
 
-    if (response.data.sessionId) {
-      const stripe = await stripePromise;
+    if (!usuarioId) {
+      setError("Usuário não encontrado.");
+      setLoading(false);
+      return;
+    }
 
-      if (stripe) {
-        await stripe.redirectToCheckout({
-          sessionId: response.data.sessionId,
-        });
+    if (!customerId) {
+      setError("Cliente não encontrado.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customerId, priceId, usuarioId }),
+      });
+  
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Erro ao criar sessão:", data.error);
+        throw new Error(data.error || "Erro inesperado ao processar o pagamento.");
+      }  
+
+      if (response.ok && data.sessionId) {
+        // Agora carregamos o Stripe.js
+        const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!);
+        if (!stripe) {
+          console.error("Falha ao carregar Stripe.js.");
+          setError("Erro ao carregar Stripe.");
+          return;
+        }
+        
+
+        if (!stripe) {
+          setError("Falha ao carregar o Stripe.");
+          return;
+        }
+
+        // Redireciona para o Checkout da Stripe
+        await stripe.redirectToCheckout({ sessionId: data.sessionId });
+      } else {
+        setError(data.error || "Erro ao criar sessão de pagamento.");
       }
+    } catch (err) {
+      setError("Erro inesperado ao processar o pagamento.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Button color="primary" onClick={handleSubmit}>
-      {price}
-    </Button>
+    <div>
+      <Button isLoading={loading} disabled={loading} onClick={handlePayment}>
+        {price}
+      </Button>
+      {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+    </div>
   );
-};
-
-export default StripeSubs;
+}
