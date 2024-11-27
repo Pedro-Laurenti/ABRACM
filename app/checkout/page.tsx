@@ -19,9 +19,9 @@ export default function Checkout() {
         <CardFooter className="absolute bg-black/40 bottom-0 z-10 border-t-1 border-default-600 dark:border-default-100">
           <div className="flex flex-grow gap-2 items-center">
             <Image
-              alt="Breathing app icon"
+              alt="Avatar Setes"
               className="rounded-full w-10 h-11 bg-black"
-              src="https://nextui.org/images/breathing-app-icon.jpeg"
+              src="/Avatar1.svg"
             />
             <div className="flex flex-col">
               <p className="text-tiny text-white/60">Mensalidade para Sedes</p>
@@ -38,7 +38,7 @@ export default function Checkout() {
         <Card isFooterBlurred className="w-full h-[300px] col-span-12 sm:col-span-7">
           <CardHeader className="absolute z-10 top-1 flex-col items-start bg-black/50 backdrop-blur-lg">
             <p className="text-tiny text-white/60 uppercase font-bold">Já faz parte? </p>
-            <h4 className="text-white/90 font-medium text-xl">Integre outra filial</h4>
+            <h4 className="text-white/90 font-medium text-xl">Integre uma filial</h4>
           </CardHeader>
           <Image
             removeWrapper
@@ -49,9 +49,9 @@ export default function Checkout() {
           <CardFooter className="absolute bg-black/40 bottom-0 z-10 border-t-1 border-default-600 dark:border-default-100">
             <div className="flex flex-grow gap-2 items-center">
               <Image
-                alt="Breathing app icon"
+                alt="Avatar Filiais"
                 className="rounded-full w-10 h-11 bg-black"
-                src="https://nextui.org/images/breathing-app-icon.jpeg"
+                src="/Avatar2.svg"
               />
               <div className="flex flex-col">
                 <p className="text-tiny text-white/60">Mensalidade para filiais</p>

@@ -124,7 +124,7 @@ export default function SigninPage() {
               {loading ? "Carregando..." : "Entrar"}
             </Button>
             <div className="text-sm text-gray-600 text-center flex flex-col items-center">
-              <Link color="primary" href="/recovery" className="text-sm">
+              <Link color="primary" href="/signin/recovery" className="text-sm">
                 Esqueci a senha
               </Link>
             </div>
@@ -132,7 +132,7 @@ export default function SigninPage() {
           <Divider className="my-8" />
           <div className="text-sm text-gray-600 text-center flex flex-col items-center">
             Ainda não possui uma conta?
-            <Link color="primary" href="/signup" className="text-sm">
+            <Link color="primary" href="/signin/signup" className="text-sm">
               Cadastre-se.
             </Link>
           </div>

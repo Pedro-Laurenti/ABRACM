@@ -1,12 +1,9 @@
 import "@/styles/globals.css";
 import { Metadata, Viewport } from "next";
 import clsx from "clsx";
-import NextLink from "next/link";
 import { Providers } from "./providers";
-import { Logo } from "@/components/icons";
 import { siteConfig } from "@/config/site";
 import { fontSans } from "@/config/fonts";
-import { Navbar } from "@/components/navbar";
 
 export const metadata: Metadata = {
   title: {
@@ -40,21 +37,7 @@ export default function RootLayout({
         )}
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
-          <Navbar />
-          <main className="container mx-auto max-w-7xl pt-16 px-6 flex-grow">
-            {children}
-          </main>
-          <footer className="w-full flex items-center justify-around py-3">
-            <NextLink className="flex justify-start items-center gap-1" href="/">
-              <Logo />
-              <p className="font-bold text-content1-foreground">ABRACM</p>
-            </NextLink>
-            <div className="flex flex-col h-auto">
-              <div>Av. Juscelino Kubitscheck, 500</div>
-              <div>Bairro Jundiaí, Anápolis / GO</div>
-              <div>Cep: 75110-390</div>
-            </div>
-          </footer>
+          {children}
         </Providers>
       </body>
     </html>
