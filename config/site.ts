@@ -9,27 +9,27 @@ export const siteConfig = {
       href: "/",
     },
     {
-        label: "Quem somos",
-        href: "/quem-somos",
+      label: "Quem somos",
+      href: "/quem-somos",
     },
     {
-        label: "Sou associado",
-        href: "/signin",
+      label: "Sou associado",
+      href: "/signin",
     },
   ],
   navMenuItems: [
-      {
-        label: "Início",
-        href: "/",
-      },
-      {
-          label: "Questionário",
-          href: "/questionario",
-      },
-      {
-          label: "Agendar terapia",
-          href: "/checkout",
-      },
+    {
+      label: "Início",
+      href: "/",
+    },
+    {
+      label: "Quem somos",
+      href: "/quem-somos",
+    },
+    {
+      label: "Sou associado",
+      href: "/signin",
+    },
   ],
   links: {
     github: "https://github.com/nextui-org/nextui",
